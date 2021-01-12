@@ -3,8 +3,8 @@ import json
 
 app = Flask(__name__)
 DESENVOLVEDORES = [
-    {"id": 0, "nome": "junior", "habilidades": ["python", "flask"]},
-    {"id": 1, "nome": "jan", "habilidades": ["python", "django", ""]}]
+    {"nome": "junior", "habilidades": ["python", "flask"]},
+    {"nome": "jan", "habilidades": ["python", "django", ""]}]
 
 
 SUCESSO = "sucesso"
@@ -23,29 +23,36 @@ def home():
 @app.route('/dev/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def desenvolvedor(id):
     metodo = request.method
-    if metodo == 'GET':
-        try:
-            response = DESENVOLVEDORES[id]
-        except IndexError:
-            response = estado
+    try:
+        if metodo == 'GET':
+            try:
+                response = DESENVOLVEDORES[id]
+            except IndexError:
+                response = estado
 
-    elif metodo == 'PUT':
-        try:
-            dados = json.loads(request.data)
-            DESENVOLVEDORES[id] = dados
-            response = DESENVOLVEDORES[id]
-        except IndexError:
-            response = jsonify(estado)
+        elif metodo == 'PUT':
+            try:
+                dados = json.loads(request.data)
+                DESENVOLVEDORES[id] = dados
+                response = DESENVOLVEDORES[id]
+            except IndexError:
+                response = estado
 
-    elif metodo == 'DELETE':
-        try:
-            DESENVOLVEDORES.pop(id)
-            estado["status"] = SUCESSO
-            estado["mensagem"] = "registro excluido com sucesso"
-            response = estado
-        except:
-            response = estado
-    return response
+        elif metodo == 'DELETE':
+            try:
+                DESENVOLVEDORES.pop(id)
+                estado["status"] = SUCESSO
+                estado["mensagem"] = "registro excluido com sucesso"
+                response = estado
+            except:
+                response = estado
+
+    except Exception:
+        estado["status"] = FALHA
+        estado["mensagem"] = "Erro Desconhecido"
+        response = estado
+
+    return jsonify(response)
 
 @app.route('/dev', methods=['POST', 'GET'])
 def lista_desenvolvedores():
@@ -58,8 +65,7 @@ def lista_desenvolvedores():
         response = lista_retorno
 
     elif metodo == 'POST':
-        dados = json.loads(request.data)
-        dados["id"] = len(DESENVOLVEDORES)
+        dados = request.data
         DESENVOLVEDORES.append(dados)
         estado["status"] = SUCESSO
         estado["mensagem"] = "Registro incluido com sucesso"
